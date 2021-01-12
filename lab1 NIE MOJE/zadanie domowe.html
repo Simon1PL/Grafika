@@ -1,0 +1,287 @@
+<!doctype html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+
+        <title>Zadanie WebGL / ThreeJS</title>
+        <meta name="description" content="Zadanie WebGL / ThreeJS">
+        <meta name="author" content="Wojciech Kosztyla">
+
+        <style>
+            *{margin: 0; padding: 0; overflow: hidden;}
+            canvas{width: 100%; height: 100%}
+        </style>
+    </head>
+
+    <body>
+        <div style="font-family: Roboto,serif;position: absolute; top: 7vh; text-align: center; display: block; color: white; width: 100%; font-size: 40px">Click somewhere!</div>
+
+        <script src="https://threejs.org/build/three.js"></script>
+        <script>
+            let width = 1920;
+            width = innerWidth;
+            let height = 1080;
+            height = innerHeight;
+
+
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(75, width/height, 0.1, 1000);
+            scene.add(camera);
+
+            var renderer = new THREE.WebGLRenderer({antialias: true});
+            renderer.setSize(width, height);
+            document.body.appendChild(renderer.domElement);
+
+            /////////////// LAND
+
+            var szerokoscTerenu = 50.0;
+
+            var geometry1 = new THREE.Geometry();
+            geometry1.vertices.push(new THREE.Vector3( -szerokoscTerenu, 0, -szerokoscTerenu ));
+            geometry1.vertices.push(new THREE.Vector3(  szerokoscTerenu, 0, -szerokoscTerenu ));
+            geometry1.vertices.push(new THREE.Vector3(  szerokoscTerenu, 0,  szerokoscTerenu ));
+            geometry1.vertices.push(new THREE.Vector3( -szerokoscTerenu, 0,  szerokoscTerenu ));
+            geometry1.faces.push(new THREE.Face3(2,1,0));
+            geometry1.faces.push(new THREE.Face3(0,3,2));
+            geometry1.computeFaceNormals();
+
+            var material1 = new THREE.MeshPhongMaterial({color: 0x137547});
+
+            var mesh1 = new THREE.Mesh(geometry1, material1);
+            scene.add(mesh1);
+
+
+
+            /////////// Słoneczko
+
+            var light1 = new THREE.PointLight( 0x000408, 15, 1000 );
+            light1.position.set( -50, 500, 50 );
+            scene.add( light1 );
+            light1.type;
+
+            var light2 = new THREE.PointLight( 0xf0feb1, 9, 1000 );
+
+            light2.position.set( 500, 300, -500 );
+            scene.add( light2 );
+            light2.type;
+
+            scene.add(new THREE.AmbientLight(0xff0000, 0.25));
+
+
+            camera.position.set(-(szerokoscTerenu * 0.8), 15, -(szerokoscTerenu * 0.8));
+            camera.lookAt(mesh1.position);
+
+
+
+            //////// DOM
+
+            var geoDomu = new THREE.BoxGeometry(20, 10, 10);
+            var matDomu = new THREE.MeshPhongMaterial({color: 0xfe2222});
+            var domu = new THREE.Mesh(geoDomu, matDomu);
+            scene.add(domu);
+
+            /// dach
+
+            var geoDachu = new THREE.Geometry();
+            geoDachu.vertices.push(new THREE.Vector3(-11,0,-6));
+            geoDachu.vertices.push(new THREE.Vector3(11,0,-6));
+            geoDachu.vertices.push(new THREE.Vector3(11,0,6));
+            geoDachu.vertices.push(new THREE.Vector3(-11,0,6));
+            geoDachu.vertices.push(new THREE.Vector3(0,5,0));
+            geoDachu.faces.push(new THREE.Face3(1,0,4));
+            geoDachu.faces.push(new THREE.Face3(2,1,4));
+            geoDachu.faces.push(new THREE.Face3(3,2,4));
+            geoDachu.faces.push(new THREE.Face3(0,3,4));
+            geoDachu.faces.push(new THREE.Face4(0,1,2,3));
+            geoDachu.computeFaceNormals();
+
+
+            var matDachu = new THREE.MeshPhongMaterial({color: 0xb9533a, side: THREE.DoubleSide, specular: 0xf0f0ff, shininess: 30});
+            var dachu = new THREE.Mesh(geoDachu, matDachu);
+            scene.add(dachu);
+            dachu.position.y = 5;
+
+
+            //////// DRZWI
+
+            var geoDrzwi = new THREE.CubeGeometry(2,3.5,1);
+            var matDrzwi = new THREE.MeshPhongMaterial({color: 0x897893});
+            var drzwi = new THREE.Mesh(geoDrzwi, matDrzwi);
+            drzwi.position.z = -5;
+            drzwi.position.y = 1.75;
+            scene.add(drzwi);
+
+
+            ///////// SAMOCHODZIK
+
+            var PanSamochodzik = new THREE.Group();
+
+            var geoSamochodu1 = new THREE.BoxGeometry(7,1.5,4);
+            var kolorekSamochodu = new THREE.MeshPhongMaterial({color: 0x2F6D95});
+
+            PanSamochodzik.add(new THREE.Mesh(geoSamochodu1, kolorekSamochodu));
+
+            var geoSamochodu2 = new THREE.BoxGeometry(4,1.5,3.5);
+            var kolorekSzybeczki = new THREE.MeshPhongMaterial({color: 0x2F6D95, opacity: 0.15, transparent: true});
+            var szkloNaDrodzeUwazajZiomek = new THREE.Mesh(geoSamochodu2, kolorekSzybeczki);
+            szkloNaDrodzeUwazajZiomek.position.y = 1.4;
+
+            PanSamochodzik.add(szkloNaDrodzeUwazajZiomek);
+
+            var geoSamochodu3 = new THREE.BoxGeometry(4.2,0.4, 3.7);
+            var dachNadDachyPowiadam = new THREE.Mesh(geoSamochodu3, kolorekSamochodu);
+            dachNadDachyPowiadam.position.y = 2.5;
+
+            PanSamochodzik.add(dachNadDachyPowiadam);
+
+            var kolaGeo = new THREE.CylinderGeometry(0.8,0.8,4.2,8);
+            var czarne_kola_kolor = new THREE.MeshPhongMaterial({color: 0x333333});
+            var kolaPrzod = new THREE.Mesh(kolaGeo, czarne_kola_kolor);
+            kolaPrzod.rotation.x = Math.PI / 2;
+            kolaPrzod.position.x = 2.2;
+            kolaPrzod.position.y = -0.5;
+
+            PanSamochodzik.add(kolaPrzod);
+
+            var kolaTyl = new THREE.Mesh(kolaGeo, czarne_kola_kolor);
+            kolaTyl.rotation.x = Math.PI / 2;
+            kolaTyl.position.x = -2.2;
+            kolaTyl.position.y = -0.5;
+
+            PanSamochodzik.add(kolaTyl);
+
+
+
+            scene.add(PanSamochodzik);
+            PanSamochodzik.position.y = 4;
+            PanSamochodzik.position.x = -30;
+            PanSamochodzik.position.z = -15;
+
+
+
+
+
+            //////////////////
+
+            var segmentyDrzewa = 11;
+            var Tree = new THREE.Group();
+
+            //////////////// Pieniek
+
+            var pienGeometry = new THREE.CylinderGeometry(0.7,0.6,2, segmentyDrzewa);
+            var pienMaterial = new THREE.MeshPhongMaterial({color: 0x8c7051});
+            var pienMesh = new THREE.Mesh(pienGeometry, pienMaterial);
+            pienMesh.position.y = 1;
+
+            Tree.add(pienMesh);
+
+            /////////////// Drzewo czesc wlasciwa
+
+            var drzewoGeometry = new THREE.ConeGeometry(1.9, 4, segmentyDrzewa);
+            var drzewoMaterial = new THREE.MeshPhongMaterial({color: 0xc0da74});
+            var segmentMesh = new THREE.Mesh(drzewoGeometry, drzewoMaterial);
+            segmentMesh.position.y = 4;
+
+            Tree.add(segmentMesh);
+
+            segmentMesh = new THREE.Mesh(drzewoGeometry, drzewoMaterial);
+            segmentMesh.scale.x = 0.8;
+            segmentMesh.scale.z = 0.8;
+            segmentMesh.position.y = 6;
+
+            Tree.add(segmentMesh);
+
+            segmentMesh = new THREE.Mesh(drzewoGeometry, drzewoMaterial);
+            segmentMesh.scale.x = 0.7;
+            segmentMesh.scale.z = 0.7;
+            segmentMesh.position.y = 8;
+
+            Tree.add(segmentMesh);
+
+            /////////
+
+            newGroup = Tree.clone();
+            scene.add(newGroup);
+            newGroup.position.z = 15;
+            newGroup.position.x = -8;
+
+            var ileDrzew = 20;
+            var minOdleglosc = 15;
+
+            for(i=0; i<ileDrzew; i++){
+                tempX = 2 * szerokoscTerenu * Math.random() - szerokoscTerenu;
+                tempZ = 2 * szerokoscTerenu * Math.random() - szerokoscTerenu;
+
+                let nieodnaleziono = 0;
+
+                while(nieodnaleziono === 0){
+                    for(j=0; j<scene.children.length; j++){
+                        odlegloscKwadrat = (tempX - scene.children[j].position.x) * (tempX - scene.children[j].position.x) +
+                            (tempZ - scene.children[j].position.z) * (tempZ - scene.children[j].position.z);
+
+                        if(odlegloscKwadrat > minOdleglosc*minOdleglosc){
+
+                            tempX = 2 * szerokoscTerenu * Math.random() - szerokoscTerenu;
+                            tempZ = 2 * szerokoscTerenu * Math.random() - szerokoscTerenu;
+                            break;
+
+                        }
+
+
+                    }
+                    nieodnaleziono = 1;
+                }
+
+                newGroup = Tree.clone();
+                scene.add(newGroup);
+                newGroup.position.x = tempX;
+                newGroup.position.z = tempZ;
+
+            }
+
+
+
+
+
+
+
+            function render()
+            {
+                renderer.render(scene, camera);
+            }
+            render();
+
+
+            var fi = 0;
+            function render()
+            {
+
+                //cube.rotation.x+= 0.1;
+                //cube.rotation.y+= 0.01;
+                //cube.rotation.z += Math.random()/500;
+                PanSamochodzik.position.z = 22*Math.sin(fi);
+                PanSamochodzik.position.x = 22*Math.cos(fi);
+                PanSamochodzik.rotation.y = (-fi)/4*Math.PI;
+                PanSamochodzik.rotation.y = (-fi + 0.5) % (2 * Math.PI);
+                fi = (fi + 0.03)%(2*Math.PI);
+                requestAnimationFrame(render);
+
+                renderer.render(scene, camera);
+            }
+            render();
+
+
+        </script>
+        <script>
+            var x = new Audio('dejavu.mp3');
+            function PlayMusicLoop(){
+                window.setInterval(function (){
+                    x.play();
+                }), 11000
+            }
+
+            window.onmousedown = PlayMusicLoop;
+        </script>
+    </body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - FBX loader</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+	</head>
+
+	<body>
+		<div id="info">
+			<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - FBXLoader<br />
+			Character and animation from <a href="https://www.mixamo.com/" target="_blank" rel="noopener">Mixamo</a>
+		</div>
+
+		<script src="../build/three.js"></script>
+		<script src="./js/libs/stats.min.js"></script>
+		<script src="./js/controls/OrbitControls.js"></script>
+		<script src="./js/libs/inflate.min.js"></script>
+		<script src="./js/loaders/FBXLoader.js"></script>
+		<script type="module">
+
+			var container, stats, controls;
+			var camera, scene, renderer, light;
+
+			var clock = new THREE.Clock();
+
+			var mixer, mixer1, action, action2;
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 20000 );
+				camera.position.set( 500, 300, -100 );
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0xd7a63c );
+				scene.fog = new THREE.Fog( 0xd7a63c, 200, 1200 );
+
+				light = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+				light.position.set( 0, 200, 0 );
+				scene.add( light );
+
+				light = new THREE.DirectionalLight( 0xffffff );
+				light.position.set( 0, 200, 100 );
+				light.castShadow = true;
+				light.shadow.camera.top = 180;
+				light.shadow.camera.bottom = - 100;
+				light.shadow.camera.left = - 120;
+				light.shadow.camera.right = 120;
+				scene.add( light );
+
+				// scene.add( new CameraHelper( light.shadow.camera ) );
+
+				// ground
+				var texture = new THREE.TextureLoader().load('model/sand.jpg');
+				texture.wrapS = THREE.RepeatWrapping;
+				texture.wrapT = THREE.RepeatWrapping;
+				texture.repeat.set( 7, 7 );
+				var mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2000, 2000), new THREE.MeshPhongMaterial({ map: texture }) );
+				mesh.rotation.x = - Math.PI / 2;
+				mesh.receiveShadow = true;
+				scene.add( mesh );
+
+				function play() {
+					action.reset();
+					action2.reset();
+					action.play();
+					action2.paused = true;
+					action2.play();
+					setTimeout(function(){ action2.paused = false; }, 400);
+					setTimeout(function(){ action2.paused = true; }, 1400);
+					setTimeout(function(){ action.paused = true; }, 2800);
+					setTimeout(function(){ play() }, 3000);
+				}
+
+				// DyingMan
+				var loader = new THREE.FBXLoader();
+				loader.load( 'model/Walking To Dying.fbx', function ( object ) {
+
+					mixer = new THREE.AnimationMixer( object );
+
+					action = mixer.clipAction( object.animations[ 0 ] );
+					action.paused = true;
+					action.play();
+
+					object.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					} );
+
+					scene.add( object );
+					object.rotation.y = Math.PI/1.7;
+					object.position.z = 400;
+					object.position.x = -300;
+
+					// fireMan
+					loader.load( 'model/Fire Rifle.fbx', function ( object ) {
+
+					mixer1 = new THREE.AnimationMixer( object );
+
+					action2 = mixer1.clipAction( object.animations[ 0 ] );
+					action2.paused = true;
+					action2.play();
+					play();
+
+					object.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					} );
+
+					scene.add( object );
+					object.rotation.y = -Math.PI/5;
+					
+					} );
+				} );
+
+				
+				// hideMan
+				loader.load( 'model/Fire Rifle.fbx', function ( hideMan ) {
+
+					mixer1 = new THREE.AnimationMixer( hideMan );
+
+					action2 = mixer1.clipAction( hideMan.animations[ 0 ] );
+					action2.paused = true;
+					action2.play();
+
+					hideMan.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					} );
+
+					hideMan.position.z = 350;
+					hideMan.position.x = 130; 
+					hideMan.rotation.y = Math.PI; 
+					scene.add( hideMan );
+				} );
+
+				// model-rock
+				loader.load( 'model/Rock_7.fbx', function ( object ) {
+
+				object.traverse( function ( child ) {
+
+					if ( child.isMesh ) {
+
+						child.castShadow = true;
+						child.receiveShadow = true;
+
+					}
+
+				} );
+
+				scene.add( object );
+				object.scale.x = 0.3;
+				object.scale.y = 0.3;
+				object.scale.z = 0.3;
+				object.position.z = 50;
+				object.position.x = -70;
+
+				var stone2 = object.clone()
+				scene.add( stone2 );
+				stone2.scale.x = 0.4;
+				stone2.scale.y = 0.4;
+				stone2.scale.z = 0.4;
+				stone2.position.z = 400;
+				stone2.position.x = 50;
+
+				} );
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.shadowMap.enabled = true;
+				container.appendChild( renderer.domElement );
+
+				controls = new THREE.OrbitControls( camera, renderer.domElement );
+				controls.target.set( 0, 100, 0 );
+				controls.update();
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+				// stats
+				stats = new Stats();
+				container.appendChild( stats.dom );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				var delta = clock.getDelta();
+
+				if ( mixer ) mixer.update( delta );
+				if ( mixer1 ) mixer1.update( delta );
+
+				renderer.render( scene, camera );
+
+				stats.update();
+
+			}
+
+		</script>
+
+	</body>
+</html>
